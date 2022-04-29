@@ -14,7 +14,7 @@ def draw_soccer_pitch(figsize=(9, 6)):
     https://www.kaggle.com/code/ajsteele/draw-soccer-pitch-with-matplotlib/notebook
     """
     rect = patches.Rectangle((-1, -1), 122, 92, linewidth=0.1,
-                             edgecolor='r', facecolor='black', zorder=0)
+                             edgecolor='r', facecolor='black', zorder=0, label='_nolegend_')
 
     fig, ax = plt.subplots(1, figsize=figsize)
     ax.add_patch(rect)
@@ -75,15 +75,27 @@ def plot_pass_length_heatmap(p):
         
     # graph
     fig, axes = plt.subplots(2, 3, figsize=(20, 10))
-    f1 = sns.heatmap(origin_mean_dist_data['Spain'][['distance']], vmin=-10, vmax=15, ax=axes[0, 0], cbar=False, center=0)
+    cbar_ax = fig.add_axes([.91, .15, .03, .7])
+    f1 = sns.heatmap(
+        origin_mean_dist_data['Spain'][['distance']], vmin=-10, vmax=15, ax=axes[0, 0], cbar=False, center=0
+    )
     f1.set(xticklabels=[], xlabel=None, yticklabels=[], ylabel=None, title='Spain')
-    f2 = sns.heatmap(origin_mean_dist_data['Italy'][['distance']], vmin=-10, vmax=15, ax=axes[0, 1], cbar=False,center=0)
+    f2 = sns.heatmap(
+        origin_mean_dist_data['Italy'][['distance']], vmin=-10, vmax=15, ax=axes[0, 1], cbar=False, center=0
+    )
     f2.set(xticklabels=[], xlabel=None, yticklabels=[], ylabel=None, title='Italy')
-    f3 = sns.heatmap(origin_mean_dist_data['France'][['distance']], vmin=-10, vmax=15, ax=axes[0, 2], cbar=False,center=0)
+    f3 = sns.heatmap(
+        origin_mean_dist_data['France'][['distance']], vmin=-10, vmax=15, ax=axes[0, 2], cbar=False, center=0
+    )
     f3.set(xticklabels=[], xlabel=None, yticklabels=[], ylabel=None, title='France')
-    f4 = sns.heatmap(origin_mean_dist_data['England'][['distance']], vmin=-10, vmax=15, ax=axes[1, 0], cbar=False,center=0)
+    f4 = sns.heatmap(
+        origin_mean_dist_data['England'][['distance']], vmin=-10, vmax=15, ax=axes[1, 0], cbar=False, center=0
+    )
     f4.set(xticklabels=[], xlabel=None, yticklabels=[], ylabel=None, title='England')
-    f5 = sns.heatmap(origin_mean_dist_data['Germany'][['distance']], vmin=-10, vmax=15, ax=axes[1, 1],center=0,cbar=True)
+    f5 = sns.heatmap(
+        origin_mean_dist_data['Germany'][['distance']], vmin=-10,
+        vmax=15, ax=axes[1, 1], center=0, cbar_ax=cbar_ax
+    )
     f5.set(xticklabels=[], xlabel=None, yticklabels=[], ylabel=None, title='Germany')
     fig.delaxes(axes[1][2])
     
@@ -107,7 +119,7 @@ def plot_pass_by_country(pp_avg):
         print('Plotting', country, 'points')
         df = pp_avg_agg_c[(pp_avg_agg_c['country'] == country) & (pp_avg_agg_c['n_prop'] > 3)].copy()
 
-        draw_soccer_pitch()
+        fig, ax = draw_soccer_pitch()
 
         for i in range(len(df)):
             if (df['n_prop'].iloc[i] < 5):
@@ -116,17 +128,21 @@ def plot_pass_by_country(pp_avg):
             elif (df['n_prop'].iloc[i] < 10):
                 lnw = 1
                 col = 'blue'
-            elif (df['n_prop'].iloc[i] < 20):
-                lnw = 2
-                col = 'green'
             else:
-                lnw = 3
+                lnw = 2
                 col = 'red'
 
             plt.plot((df['or_avg_x'].iloc[i],df['dest_avg_x'].iloc[i]),
                      (df['or_avg_y'].iloc[i],df['dest_avg_y'].iloc[i]),
                      color=col, linewidth = lnw)
-            plt.title(country)
+        
+        plt.title(country)
+        plt.legend(labels=['<50', '50-150', '>150'], loc=2)
+        leg = ax.get_legend()
+        hl_dict = {handle.get_label(): handle for handle in leg.legendHandles}
+        hl_dict['_child1'].set_color('white')
+        hl_dict['_child2'].set_color('blue')
+        hl_dict['_child3'].set_color('red')
     
     return None
 
@@ -148,17 +164,15 @@ def plot_pass_by_country_role(pp_avg):
         print('Plotting', country, 'points')
         df = pp_avg_agg_ng[(pp_avg_agg_ng['country'] == country) & (pp_avg_agg_ng['n_prop'] > 2)].copy()
 
-        draw_soccer_pitch()
+        fig, ax = draw_soccer_pitch()
 
         for i in range(len(df)):
             if (df['n_prop'].iloc[i] < 5):
                 lnw = 0.5
             elif (df['n_prop'].iloc[i] < 10):
                 lnw = 1
-            elif (df['n_prop'].iloc[i] < 20):
-                lnw = 2
             else:
-                lnw = 3
+                lnw = 2
 
             if(df['position'].iloc[i] == 'Defender'):
                 col = 'white'
@@ -170,7 +184,14 @@ def plot_pass_by_country_role(pp_avg):
             plt.plot((df['or_avg_x'].iloc[i],df['dest_avg_x'].iloc[i]),
                      (df['or_avg_y'].iloc[i],df['dest_avg_y'].iloc[i]),
                      color=col, linewidth = lnw, alpha=0.75)
-            plt.title(country)
+            
+        plt.title(country)
+        plt.legend(labels=['<50', '50-150', '>150'], loc=2)
+        leg = ax.get_legend()
+        hl_dict = {handle.get_label(): handle for handle in leg.legendHandles}
+        hl_dict['_child1'].set_color('white')
+        hl_dict['_child2'].set_color('blue')
+        hl_dict['_child3'].set_color('red')
     
     return None
 
@@ -195,7 +216,7 @@ def plot_freq_pass(ps_df):
         print('Plotting', country, 'points')
         df = df_max_10[(df_max_10['country'] == country)].copy()
 
-        draw_soccer_pitch()
+        fig, ax = draw_soccer_pitch()
 
         for i in range(len(df)):
 
@@ -205,9 +226,6 @@ def plot_freq_pass(ps_df):
             elif (df['n_prop'].iloc[i] < 5):
                 lnw = 1
                 col = 'blue'
-            elif (df['n_prop'].iloc[i] < 8):
-                lnw = 1
-                col = 'green'
             else:
                 lnw = 2
                 col = 'red'
@@ -215,21 +233,19 @@ def plot_freq_pass(ps_df):
             dx = (df['dest_avg_x'].iloc[i] - df['or_avg_x'].iloc[i])
             dy = (df['dest_avg_y'].iloc[i] - df['or_avg_y'].iloc[i])
 
-            plt.arrow(x=df['or_avg_x'].iloc[i], y=df['or_avg_y'].iloc[i], dx=dx, dy=dy, width=.5, color=col, alpha=0.75) 
-            plt.title(country)
+            plt.arrow(
+                x=df['or_avg_x'].iloc[i], y=df['or_avg_y'].iloc[i], dx=dx,
+                dy=dy, width=.5, color=col, alpha=0.75
+            ) 
+            
+        plt.title(country)    
+        plt.legend(labels=['<50', '50-150', '>150'], loc=2)
+        leg = ax.get_legend()
+        hl_dict = {handle.get_label(): handle for handle in leg.legendHandles}
+        hl_dict['_child1'].set_color('white')
+        hl_dict['_child2'].set_color('blue')
+        hl_dict['_child3'].set_color('red')
     
     
     return None
-
-
-
-
-
-
-
-
-
-
-
-
 
